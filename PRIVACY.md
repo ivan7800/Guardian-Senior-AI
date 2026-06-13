@@ -1,34 +1,45 @@
-# Política de privacidad
+# Privacidad
 
-Guardian Senior AI Secure v4 está diseñada para funcionar de forma local.
+Guardian Senior AI Secure v6 está diseñada como app local y offline-first.
 
-## Datos que puede guardar
+## Qué datos puede guardar
 
 - Nombre de la persona mayor.
-- Teléfonos de familiares o cuidadores.
+- Teléfonos familiares.
 - Mensaje de emergencia.
-- Medicación o notas médicas introducidas por la familia.
-- Registro mínimo de eventos.
-- Hash del PIN familiar generado con PBKDF2-SHA256 y sal aleatoria.
+- Notas médicas esenciales.
+- Registro local mínimo de eventos.
+- Preferencias visuales.
 
 ## Dónde se guardan
 
-Los datos se guardan en el navegador del dispositivo mediante `localStorage`.
+Los datos se guardan en `localStorage` del navegador del dispositivo.
 
-## Qué datos se envían a internet
+## Qué se cifra
 
-La app no envía datos a servidores propios, no incluye analíticas y no usa cookies externas.
+Las notas médicas se cifran con AES-GCM usando una clave derivada del PIN familiar mediante PBKDF2 + sal.
 
-Cuando se pulsa “Enviar SMS”, el sistema del teléfono prepara un SMS con el mensaje de emergencia. Si el usuario concede permiso de ubicación, se añade un enlace de Google Maps al mensaje.
+## Qué no se cifra por diseño
+
+Los teléfonos familiares se guardan localmente sin cifrar para que la app pueda llamar o preparar SMS de emergencia sin pedir PIN. En pantalla se muestran ocultos parcialmente.
+
+## Qué no hace la app
+
+- No usa servidores propios.
+- No usa analíticas.
+- No usa cookies externas.
+- No usa anuncios.
+- No envía conversaciones a una IA externa.
+- No solicita ubicación al abrir la app.
 
 ## Ubicación
 
-La ubicación no se pide al abrir la app. Solo se solicita cuando se activa una emergencia o una prueba de SMS.
+La ubicación solo se solicita al activar una emergencia o una prueba de SMS. Si el usuario rechaza el permiso, el aviso se genera sin ubicación.
 
 ## Borrado de datos
 
-La app incluye una opción de borrado total para eliminar configuración, PIN, medicación e historial del dispositivo.
+La app incluye un botón de borrado total protegido por PIN. El borrado elimina configuración, PIN, notas médicas e historial local del navegador.
 
-## Aviso médico y legal
+## Nota sobre hosting
 
-Esta app no sustituye a servicios de emergencia, teleasistencia profesional, atención médica ni dispositivos certificados de detección de caídas.
+Si la app se publica en GitHub Pages u otro hosting, la app no envía datos personales desde el código, pero el proveedor de hosting puede registrar accesos técnicos como IP, fecha o navegador.

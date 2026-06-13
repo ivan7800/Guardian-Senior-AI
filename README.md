@@ -1,52 +1,58 @@
-# Guardian Senior AI Secure v4
+# Guardian Senior AI Secure v6
 
-PWA local para ayudar a personas mayores a pedir ayuda rápidamente desde un móvil, con privacidad y seguridad por diseño.
+Prototipo PWA local para ayudar a personas mayores a pedir ayuda de forma rápida desde iPhone, Android o navegador.
 
-## Funciones
+## Funciones principales
 
-- Botón SOS enorme.
-- Botón directo para llamar al 112.
-- Llamada a familiar 1 y familiar 2.
-- SMS con mensaje de emergencia y ubicación opcional.
-- Modo mayor con interfaz simplificada.
-- Alto contraste.
-- Reconocimiento de voz si el navegador lo permite.
-- Atajo de iPhone mediante enlace `?sos=1`.
-- Configuración familiar protegida con PIN.
-- PIN guardado con PBKDF2-SHA256 + sal + límite de intentos.
-- Teléfonos enmascarados en pantalla.
-- Registro mínimo local.
-- Exportación y borrado del registro.
-- Borrado total de datos.
-- PWA instalable y offline básica.
+- Botón grande **PEDIR AYUDA**.
+- Botón directo **LLAMAR 112**.
+- Botón **ESTOY BIEN** con registro local mínimo.
+- Aviso familiar por llamada y SMS.
+- Mensaje de emergencia con ubicación opcional.
+- Atajo de iPhone/Siri mediante enlace `?sos=1`.
+- PIN familiar con PBKDF2 + sal.
+- Notas médicas cifradas con AES-GCM.
+- Teléfonos ocultos parcialmente en pantalla.
+- Modo mayor y alto contraste.
+- Diagnóstico interno de compatibilidad.
+- PWA instalable y offline-first.
 
-## Seguridad y privacidad
+## Uso recomendado
 
-- No hay servidores propios.
-- No hay analíticas.
-- No hay cookies externas.
-- No hay IA externa por defecto.
-- La ubicación no se pide al cargar: solo al activar emergencia o prueba.
-- Incluye CSP básica en `index.html`.
-- Los datos se guardan en `localStorage` del dispositivo.
+1. Sube la carpeta a GitHub Pages o abre `index.html` en un navegador moderno.
+2. Crea el PIN familiar.
+3. Configura al menos un teléfono familiar.
+4. Haz una prueba real de llamada, SMS y ubicación.
+5. En iPhone, añade la app a pantalla de inicio desde Safari.
+6. Crea un Atajo de Siri que abra el enlace SOS mostrado por la app.
+
+## Importante
+
+Esta app **no sustituye al 112**, a un Apple Watch con detección de caídas, a teleasistencia profesional ni a atención médica. Es un prototipo de ayuda familiar.
+
+## Privacidad
+
+La app no usa servidores, analíticas, anuncios, cookies externas ni IA externa. Los datos se guardan en el navegador del dispositivo. Si la publicas en GitHub Pages, la app sigue sin enviar datos, aunque la plataforma de hosting puede tener registros técnicos propios.
 
 ## Limitaciones
 
-- No sustituye al 112, teleasistencia profesional, atención médica ni Apple Watch.
-- `localStorage` no es cifrado fuerte.
-- El envío de SMS depende del navegador y sistema operativo.
-- Para uso médico real se necesita auditoría profesional y posiblemente app nativa.
+- Los SMS y llamadas dependen del sistema operativo.
+- La ubicación requiere permiso del usuario.
+- El dictado de voz no funciona igual en todos los navegadores; en iPhone es mejor usar Siri + Atajos.
+- Si se pierde el PIN, las notas médicas cifradas no se pueden recuperar.
 
-## Atajo de iPhone
+## Archivos
 
-1. Sube la app a GitHub Pages o ábrela en Safari.
-2. Copia el enlace SOS que muestra la app.
-3. Abre Atajos en iPhone.
-4. Crea un atajo llamado “Necesito ayuda”.
-5. Añade la acción “Abrir URL”.
-6. Pega el enlace SOS.
-7. Di: “Oye Siri, necesito ayuda”.
+- `index.html`: interfaz.
+- `style.css`: diseño responsive y accesible.
+- `app.js`: lógica local, PIN, cifrado, SOS y diagnóstico.
+- `manifest.json`: instalación PWA.
+- `sw.js`: funcionamiento offline.
+- `PRIVACY.md`: privacidad.
+- `SECURITY.md`: seguridad.
+- `TESTING.md`: plan de pruebas.
+- `CHANGELOG.md`: cambios.
 
-## GitHub Pages
+## Licencia
 
-Sube todos los archivos a un repositorio y activa GitHub Pages en la rama principal.
+MIT. Úsala con responsabilidad.
