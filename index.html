@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#10233f" />
+  <meta name="description" content="Guardian Senior AI: ayuda familiar rápida, privada y local para personas mayores." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests">
+  <meta name="referrer" content="no-referrer" />
+  <title>Guardian Senior AI Secure v4</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">G</div>
+      <div>
+        <p class="eyebrow">Modo seguro · datos locales</p>
+        <h1>Guardian Senior AI</h1>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button id="toggleSimpleMode" class="btn btn-ghost" type="button">Modo mayor</button>
+      <button id="toggleMode" class="btn btn-ghost" type="button">Alto contraste</button>
+    </div>
+  </header>
+
+  <main id="main" class="layout">
+    <section class="hero panel">
+      <div>
+        <span id="systemStatus" class="status" aria-live="polite">Lista</span>
+        <h2>Ayuda rápida sin exponer datos sensibles</h2>
+        <p>Botones grandes, llamada, SMS con ubicación opcional, PIN familiar reforzado y privacidad local. No sustituye al 112 ni a un servicio médico.</p>
+      </div>
+    </section>
+
+    <section class="privacy-banner advanced-zone" role="note" aria-label="Privacidad">
+      <strong>Privacidad:</strong> los datos se guardan solo en este navegador mediante almacenamiento local. La app no usa servidores, analíticas, cookies externas ni IA externa. La ubicación solo se solicita al activar una emergencia o una prueba.
+    </section>
+
+    <section class="sos-panel" aria-label="Acciones principales">
+      <button id="sosBtn" class="action action-sos" type="button">
+        <span class="action-icon">🆘</span>
+        <span class="action-title">PEDIR AYUDA</span>
+        <span class="action-subtitle">No pide PIN</span>
+      </button>
+      <button id="call112Btn" class="action action-112" type="button">
+        <span class="action-icon">☎️</span>
+        <span class="action-title">LLAMAR 112</span>
+        <span class="action-subtitle">Emergencia real</span>
+      </button>
+      <button id="safeBtn" class="action action-safe" type="button">
+        <span class="action-icon">✅</span>
+        <span class="action-title">ESTOY BIEN</span>
+        <span class="action-subtitle">Registro mínimo</span>
+      </button>
+    </section>
+
+    <section class="grid-2 advanced-zone">
+      <article class="panel">
+        <h3>Hablar o escribir</h3>
+        <p class="muted">Ejemplos: “me he caído”, “me duele el pecho”, “no puedo levantarme”. Si parece grave, recomienda 112 y abre el aviso familiar.</p>
+        <div class="button-row">
+          <button id="listenBtn" class="btn btn-primary" type="button">Hablar ahora</button>
+          <button id="readLastBtn" class="btn btn-secondary" type="button">Leer respuesta</button>
+        </div>
+        <label class="field-label" for="messageInput">Mensaje</label>
+        <textarea id="messageInput" placeholder="Escribe aquí lo que ocurre..."></textarea>
+        <button id="analyzeBtn" class="btn btn-primary btn-wide" type="button">Analizar mensaje</button>
+        <div id="analysisBox" class="notice" aria-live="polite">Sin mensajes todavía.</div>
+      </article>
+
+      <article class="panel secure-card">
+        <div class="card-heading">
+          <div>
+            <h3>Configuración familiar</h3>
+            <p class="muted">Protegida con PIN. La pantalla principal no muestra datos completos.</p>
+          </div>
+          <span id="lockState" class="pill locked">Bloqueada</span>
+        </div>
+
+        <div id="pinSetup" class="notice important hidden">
+          <strong>Primer uso:</strong> crea un PIN familiar de 4 a 8 números para editar datos sensibles. Se guarda con PBKDF2 + sal.
+          <label class="field-label" for="newPin">Nuevo PIN</label>
+          <input id="newPin" type="password" inputmode="numeric" minlength="4" maxlength="8" placeholder="Ej. 2468" autocomplete="new-password" />
+          <button id="createPinBtn" class="btn btn-primary btn-wide" type="button">Crear PIN</button>
+        </div>
+
+        <div id="pinGate" class="notice">
+          <label class="field-label" for="pinInput">PIN familiar</label>
+          <input id="pinInput" type="password" inputmode="numeric" minlength="4" maxlength="8" placeholder="Introduce el PIN" autocomplete="current-password" />
+          <button id="unlockBtn" class="btn btn-primary btn-wide" type="button">Desbloquear ajustes</button>
+          <p id="pinHelp" class="muted small"></p>
+        </div>
+
+        <div id="settingsPanel" class="hidden">
+          <label class="field-label" for="elderName">Nombre de la persona mayor</label>
+          <input id="elderName" type="text" placeholder="Ej. María" autocomplete="name" />
+
+          <label class="field-label" for="phone1">Teléfono familiar principal</label>
+          <input id="phone1" type="tel" placeholder="+34600111222" autocomplete="tel" />
+
+          <label class="field-label" for="phone2">Teléfono familiar secundario</label>
+          <input id="phone2" type="tel" placeholder="+34600333444" autocomplete="tel" />
+
+          <label class="field-label" for="medication">Medicación / notas médicas importantes</label>
+          <textarea id="medication" placeholder="Guarda solo lo imprescindible. Ej. alergias, medicación crítica, contacto médico."></textarea>
+
+          <label class="field-label" for="emergencyText">Mensaje de emergencia</label>
+          <textarea id="emergencyText">Necesito ayuda. Puede que me haya caído o me encuentre mal.</textarea>
+
+          <div class="button-row">
+            <button id="saveConfigBtn" class="btn btn-primary" type="button">Guardar datos</button>
+            <button id="testSmsBtn" class="btn btn-secondary" type="button">Probar SMS</button>
+            <button id="lockBtn" class="btn btn-secondary" type="button">Bloquear</button>
+          </div>
+        </div>
+
+        <div class="masked-summary" id="maskedSummary">Sin datos familiares configurados.</div>
+      </article>
+    </section>
+
+    <section class="grid-2 advanced-zone">
+      <article class="panel">
+        <h3>Atajo de iPhone</h3>
+        <p class="muted">Crea un atajo llamado <strong>Necesito ayuda</strong> que abra este enlace SOS. El SOS nunca exige PIN.</p>
+        <div class="link-box" id="shortcutUrl"></div>
+        <button id="copyShortcutBtn" class="btn btn-secondary btn-wide" type="button">Copiar enlace SOS</button>
+        <details class="instructions">
+          <summary>Ver instrucciones</summary>
+          <ol>
+            <li>Sube la app a GitHub Pages o ábrela en Safari.</li>
+            <li>En iPhone abre Atajos y crea uno nuevo.</li>
+            <li>Añade la acción “Abrir URL”.</li>
+            <li>Pega el enlace SOS copiado.</li>
+            <li>Di: “Oye Siri, necesito ayuda”.</li>
+          </ol>
+        </details>
+      </article>
+
+      <article class="panel">
+        <h3>Registro local mínimo</h3>
+        <p class="muted">No se guardan conversaciones completas. Solo fecha, tipo de evento y una descripción breve.</p>
+        <div class="button-row">
+          <button id="clearLogBtn" class="btn btn-secondary" type="button">Borrar registro</button>
+          <button id="exportLogBtn" class="btn btn-secondary" type="button">Exportar</button>
+        </div>
+        <ul id="eventLog" class="event-log"></ul>
+      </article>
+    </section>
+
+    <section class="panel danger-zone advanced-zone">
+      <h3>Privacidad y borrado total</h3>
+      <p>Elimina configuración, PIN, medicación e historial de este dispositivo. Requiere PIN para evitar borrados accidentales.</p>
+      <button id="wipeDataBtn" class="btn btn-danger" type="button">Borrar todos mis datos</button>
+    </section>
+
+    <noscript>
+      <section class="panel danger-zone"><strong>JavaScript está desactivado.</strong> La app necesita JavaScript para llamar, preparar SMS y guardar configuración local.</section>
+    </noscript>
+  </main>
+
+  <dialog id="emergencyDialog" class="modal">
+    <h2>Emergencia activada</h2>
+    <p id="emergencySummary">Preparando aviso...</p>
+    <div class="modal-actions">
+      <button id="callPrimaryBtn" class="btn btn-danger" type="button">Llamar familiar 1</button>
+      <button id="callSecondaryBtn" class="btn btn-danger" type="button">Llamar familiar 2</button>
+      <button id="sendSmsBtn" class="btn btn-primary" type="button">SMS familiar 1</button>
+      <button id="copyMsgBtn" class="btn btn-secondary" type="button">Copiar mensaje</button>
+      <button id="closeDialogBtn" class="btn btn-secondary" type="button">Cerrar</button>
+    </div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
