@@ -2,12 +2,14 @@
 
 const $ = (id) => document.getElementById(id);
 
-const VERSION = 'v6';
+const VERSION = 'v6.1';
 const storeKey = 'guardianSeniorAIConfigV6';
 const logKey = 'guardianSeniorAILogV6';
 const pinKey = 'guardianSeniorAIPinV6';
 const modeKey = 'guardianSeniorAIModeV6';
 const attemptKey = 'guardianSeniorAIPinAttemptsV6';
+const AUTO_LOCK_MS = 5 * 60 * 1000;
+
 const legacyKeys = {
   config: ['guardianSeniorAIConfigV5', 'guardianSeniorAIConfigV4'],
   log: ['guardianSeniorAILogV5', 'guardianSeniorAILogV4'],
@@ -16,15 +18,18 @@ const legacyKeys = {
 };
 
 const emergencyWords = [
-  'caido', 'caida', 'me he caido', 'me he caído', 'no puedo levantarme', 'no puedo', 'ayuda', 'socorro',
-  'dolor pecho', 'dolor en el pecho', 'pecho', 'infarto', 'ictus', 'mareo', 'me ahogo', 'respirar',
-  'no respiro', 'sangre', 'inconsciente', 'muy mal', 'me encuentro mal', 'he perdido el conocimiento'
+  'caido', 'caida', 'me he caido', 'me he caído', 'no puedo levantarme', 'no puedo moverme',
+  'no puedo respirar', 'no puedo caminar', 'no puedo andar', 'ayuda', 'socorro', 'emergencia',
+  'dolor pecho', 'dolor en el pecho', 'me duele el pecho', 'presion en el pecho', 'infarto',
+  'ictus', 'mareo fuerte', 'me ahogo', 'me falta el aire', 'no respiro', 'sangre',
+  'inconsciente', 'muy mal', 'me encuentro mal', 'he perdido el conocimiento', 'ambulancia'
 ];
 
 let lastEmergencyMessage = '';
 let unlocked = false;
 let sessionPin = '';
 let lastSpokenText = 'Sin mensajes todavía.';
+let autoLockTimer = null;
 
 function normalizeText(text) {
   return String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
@@ -140,6 +145,21 @@ function bytesToHex(bytes) {
   return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+function constantTimeEqual(a, b) {
+  const left = String(a || '');
+  const right = String(b || '');
+  let diff = left.length ^ right.length;
+  const len = Math.max(left.length, right.length);
+  for (let i = 0; i < len; i += 1) {
+    diff |= (left.charCodeAt(i) || 0) ^ (right.charCodeAt(i) || 0);
+  }
+  return diff === 0;
+}
+
+function sanitizeMessageText(text, max = 240) {
+  return String(text || '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
 async function deriveBits(pin, saltB64, iterations = 210000) {
   if (!cryptoAvailable()) throw new Error('Crypto API no disponible');
   const imported = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits', 'deriveKey']);
@@ -215,7 +235,7 @@ function clearAttempts() {
 
 async function createPin() {
   const pin = $('newPin').value.trim();
-  if (!/^\d{4,8}$/.test(pin)) return alert('El PIN debe tener entre 4 y 8 números.');
+  if (!/^\d{6,8}$/.test(pin)) return alert('El PIN nuevo debe tener entre 6 y 8 números.');
   if (!storageAvailable()) return alert('El navegador no permite almacenamiento local. No se puede guardar el PIN.');
   if (!cryptoAvailable()) return alert('Este navegador no permite crear un PIN seguro. Usa Safari/Chrome actualizado en HTTPS o localhost.');
 
@@ -230,6 +250,7 @@ async function createPin() {
     clearAttempts();
     refreshLockUi();
     await populateSensitiveFields();
+    scheduleAutoLock();
     logEvent('PIN familiar creado', 'security');
     speak('PIN creado. Ajustes desbloqueados.');
   } catch {
@@ -251,7 +272,7 @@ async function unlockSettings() {
   }
   try {
     const hash = await pbkdf2Hash(pin, data.salt, data.iterations || 210000);
-    if (hash !== data.hash) {
+    if (!constantTimeEqual(hash, data.hash)) {
       noteFailedAttempt();
       $('pinInput').value = '';
       $('pinHelp').textContent = lockoutText() || 'PIN incorrecto.';
@@ -264,18 +285,37 @@ async function unlockSettings() {
     clearAttempts();
     refreshLockUi();
     await populateSensitiveFields();
+    scheduleAutoLock();
     logEvent('Ajustes desbloqueados', 'security');
   } catch {
     alert('No se pudo comprobar el PIN en este navegador.');
   }
 }
 
-function lockSettings() {
+function scheduleAutoLock() {
+  if (autoLockTimer) clearTimeout(autoLockTimer);
+  autoLockTimer = null;
+  if (!unlocked) return;
+  autoLockTimer = setTimeout(() => {
+    if (!unlocked) return;
+    logEvent('Ajustes bloqueados automáticamente por inactividad', 'security');
+    lockSettings(false);
+  }, AUTO_LOCK_MS);
+}
+
+function resetAutoLock() {
+  if (unlocked) scheduleAutoLock();
+}
+
+function lockSettings(announce = true) {
+  if (autoLockTimer) clearTimeout(autoLockTimer);
+  autoLockTimer = null;
   unlocked = false;
   sessionPin = '';
+  $('pinInput').value = '';
   $('medication').value = '';
   refreshLockUi();
-  speak('Ajustes bloqueados.');
+  if (announce) speak('Ajustes bloqueados.');
 }
 
 function refreshLockUi() {
@@ -342,11 +382,11 @@ async function saveConfig() {
   try {
     const encryptedMedication = await encryptText($('medication').value.trim().slice(0, 700), sessionPin, pinData.salt, pinData.iterations || 210000);
     const config = {
-      elderName: $('elderName').value.trim().slice(0, 60),
+      elderName: sanitizeMessageText($('elderName').value, 60),
       phone1: sanitizePhone($('phone1').value),
       phone2: sanitizePhone($('phone2').value),
       medicationEncrypted: encryptedMedication,
-      emergencyText: $('emergencyText').value.trim().slice(0, 240) || 'Necesito ayuda. Puede que me haya caído o me encuentre mal.',
+      emergencyText: sanitizeMessageText($('emergencyText').value, 240) || 'Necesito ayuda. Puede que me haya caído o me encuentre mal.',
       updatedAt: new Date().toISOString(),
       version: VERSION
     };
@@ -355,6 +395,7 @@ async function saveConfig() {
     updateShortcutUrl();
     renderMaskedSummary();
     runSelfTest(false);
+    scheduleAutoLock();
     speak('Configuración guardada.');
   } catch {
     alert('No se pudo cifrar y guardar la configuración.');
@@ -430,9 +471,9 @@ function locationText(coords) {
 
 function buildEmergencyMessage(reason = '', coords = null) {
   const config = getConfig();
-  const name = config.elderName || 'La persona';
-  const base = config.emergencyText || 'Necesito ayuda. Puede que me haya caído o me encuentre mal.';
-  const reasonText = reason ? ` Motivo: ${String(reason).slice(0, 90)}.` : '';
+  const name = sanitizeMessageText(config.elderName, 60) || 'La persona';
+  const base = sanitizeMessageText(config.emergencyText, 240) || 'Necesito ayuda. Puede que me haya caído o me encuentre mal.';
+  const reasonText = reason ? ` Motivo: ${sanitizeMessageText(reason, 90)}.` : '';
   return `${name}: ${base}${reasonText} ${locationText(coords)}`;
 }
 
@@ -597,7 +638,7 @@ async function wipeAllData() {
     if (!pin) return;
     try {
       const hash = await pbkdf2Hash(pin, stored.salt, stored.iterations || 210000);
-      if (hash !== stored.hash) return alert('PIN incorrecto. No se ha borrado nada.');
+      if (!constantTimeEqual(hash, stored.hash)) return alert('PIN incorrecto. No se ha borrado nada.');
     } catch {
       return alert('No se pudo verificar el PIN. No se ha borrado nada.');
     }
@@ -638,6 +679,9 @@ function renderEnvironmentBanner() {
   if (warnings.length) {
     $('environmentBanner').classList.add('warning');
     $('environmentBanner').innerHTML = `<strong>Atención:</strong> ${escapeHtml(warnings.join(', '))}. Para uso real, pruébala en Safari/Chrome actualizado y, mejor, desde GitHub Pages HTTPS.`;
+  } else {
+    $('environmentBanner').classList.remove('warning');
+    $('environmentBanner').innerHTML = '<strong>Privacidad:</strong> los datos se guardan en este navegador. La app no usa servidores, analíticas, cookies externas ni IA externa. La ubicación solo se pide al activar una emergencia o una prueba.';
   }
 }
 
@@ -650,7 +694,9 @@ function runSelfTest(speakResult = true) {
   const items = [];
   items.push(featureStatus(storageAvailable(), 'Almacenamiento local', 'Necesario para guardar contactos, PIN e historial.'));
   items.push(featureStatus(cryptoAvailable(), 'Cifrado Web Crypto', 'Necesario para PIN PBKDF2 y notas médicas cifradas.'));
-  items.push(featureStatus(Boolean(getPinData()), 'PIN familiar configurado', 'Imprescindible antes de entregar la app.'));
+  const pinData = getPinData();
+  const pinStrengthText = pinData ? (pinData.version === VERSION ? 'PIN nuevo reforzado.' : 'PIN heredado detectado: funciona, pero se recomienda reinstalar con PIN de 6–8 dígitos.') : 'Imprescindible antes de entregar la app.';
+  items.push(featureStatus(Boolean(pinData), 'PIN familiar configurado', pinStrengthText));
   items.push(featureStatus(Boolean(config.phone1), 'Familiar principal configurado', 'Necesario para llamadas y SMS familiares.'));
   items.push(featureStatus(Boolean(navigator.geolocation), 'Geolocalización disponible', 'La ubicación se pedirá solo en emergencia o prueba.'));
   items.push(featureStatus('speechSynthesis' in window, 'Lectura de voz disponible'));
@@ -680,12 +726,15 @@ function bindEvents() {
   $('analyzeBtn').addEventListener('click', () => analyzeText($('messageInput').value || ''));
   $('readLastBtn').addEventListener('click', () => speak(lastSpokenText || $('analysisBox').textContent));
   $('testSmsBtn').addEventListener('click', prepareSmsTest);
+  $('modalCall112Btn').addEventListener('click', call112);
   $('callPrimaryBtn').addEventListener('click', callPrimary);
   $('callSecondaryBtn').addEventListener('click', callSecondary);
   $('sendSmsBtn').addEventListener('click', sendSms);
   $('sendSms2Btn').addEventListener('click', sendSms2);
   $('copyMsgBtn').addEventListener('click', copyEmergencyMessage);
-  $('closeDialogBtn').addEventListener('click', () => closeModal($('emergencyDialog')));
+  $('closeDialogBtn').addEventListener('click', () => { closeModal($('emergencyDialog')); setStatus('Lista'); });
+  $('emergencyDialog').addEventListener('cancel', () => setStatus('Lista'));
+  $('emergencyDialog').addEventListener('close', () => { if ($('systemStatus').textContent === 'Emergencia') setStatus('Lista'); });
   $('closeInstallDialogBtn').addEventListener('click', () => closeModal($('installDialog')));
   $('clearLogBtn').addEventListener('click', clearLog);
   $('exportLogBtn').addEventListener('click', exportLog);
@@ -694,6 +743,16 @@ function bindEvents() {
   $('installHelpBtn').addEventListener('click', showInstallHelp);
   $('toggleMode').addEventListener('click', () => { document.body.classList.toggle('high-contrast'); saveModes(); });
   $('toggleSimpleMode').addEventListener('click', () => { document.body.classList.toggle('simple-mode'); saveModes(); });
+  ['elderName', 'phone1', 'phone2', 'medication', 'emergencyText', 'pinInput'].forEach((id) => {
+    const element = $(id);
+    if (element) element.addEventListener('input', resetAutoLock);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && unlocked) {
+      logEvent('Ajustes bloqueados al cambiar de app o pestaña', 'security');
+      lockSettings(false);
+    }
+  });
   $('copyShortcutBtn').addEventListener('click', async () => {
     const ok = await copyText($('shortcutUrl').textContent);
     if (ok) speak('Enlace copiado.');

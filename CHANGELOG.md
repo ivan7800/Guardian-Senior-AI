@@ -1,5 +1,16 @@
 # Changelog
 
+## v6.1
+
+- Añadido botón **Llamar 112** dentro del modal SOS.
+- Corregido contraste de botones primarios en modo alto contraste.
+- Nuevas instalaciones: PIN mínimo de 6 dígitos.
+- Compatibilidad de desbloqueo con PIN heredado de 4 dígitos.
+- Añadido bloqueo automático por inactividad y cambio de pestaña/app.
+- Saneado de textos usados en mensajes de emergencia.
+- Mejorada caché PWA con versión v6.1 y fallback offline de navegación.
+- Añadido `.nojekyll` para GitHub Pages.
+
 ## v6
 
 - Añadido diagnóstico interno de compatibilidad.

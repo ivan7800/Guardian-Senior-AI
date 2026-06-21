@@ -10,9 +10,10 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="format-detection" content="telephone=yes" />
   <meta name="description" content="Guardian Senior AI Secure: ayuda familiar rápida, privada y local para personas mayores." />
+  <meta name="color-scheme" content="light dark" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; manifest-src 'self'; worker-src 'self'">
   <meta name="referrer" content="no-referrer" />
-  <title>Guardian Senior AI Secure v6</title>
+  <title>Guardian Senior AI Secure v6.1</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="icon-192.png" />
@@ -25,7 +26,7 @@
     <div class="brand">
       <img class="brand-mark" src="icon.svg" alt="" width="56" height="56" />
       <div>
-        <p class="eyebrow">Secure v6 · local · sin servidores</p>
+        <p class="eyebrow">Secure v6.1 · local · sin servidores</p>
         <h1>Guardian Senior AI</h1>
       </div>
     </div>
@@ -40,7 +41,7 @@
       <div>
         <span id="systemStatus" class="status" aria-live="polite">Lista</span>
         <h2>Ayuda rápida, clara y privada</h2>
-        <p>Botones grandes, llamada al 112, aviso familiar con ubicación opcional, PIN familiar reforzado y notas médicas cifradas. No sustituye al 112 ni a atención médica.</p>
+        <p>Botones grandes, llamada al 112, aviso familiar con ubicación opcional, PIN familiar reforzado, bloqueo automático y notas médicas cifradas. No sustituye al 112 ni a atención médica.</p>
       </div>
     </section>
 
@@ -90,18 +91,18 @@
         </div>
 
         <div id="pinSetup" class="notice important hidden">
-          <strong>Primer uso:</strong> crea un PIN familiar de 4 a 8 números para editar datos sensibles. Se guarda con PBKDF2 + sal.
+          <strong>Primer uso:</strong> crea un PIN familiar nuevo de 6 a 8 números para editar datos sensibles. Se guarda con PBKDF2 + sal.
           <label class="field-label" for="newPin">Nuevo PIN</label>
-          <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" placeholder="Ej. 2468" autocomplete="new-password" />
+          <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]*" minlength="6" maxlength="8" placeholder="Ej. 246824" autocomplete="new-password" />
           <button id="createPinBtn" class="btn btn-primary btn-wide" type="button">Crear PIN</button>
-          <p class="muted small">Guarda el PIN en un lugar seguro. Si se pierde, la app no puede recuperar las notas médicas cifradas.</p>
+          <p class="muted small">Guarda el PIN en un lugar seguro. Si se pierde, la app no puede recuperar las notas médicas cifradas. Los PIN antiguos de 4 dígitos siguen pudiendo desbloquear, pero se recomienda crear una instalación nueva con 6–8 dígitos.</p>
         </div>
 
         <div id="pinGate" class="notice">
           <label class="field-label" for="pinInput">PIN familiar</label>
           <input id="pinInput" type="password" inputmode="numeric" pattern="[0-9]*" minlength="4" maxlength="8" placeholder="Introduce el PIN" autocomplete="current-password" />
           <button id="unlockBtn" class="btn btn-primary btn-wide" type="button">Desbloquear ajustes</button>
-          <p id="pinHelp" class="muted small" aria-live="polite"></p>
+          <p id="pinHelp" class="muted small" aria-live="polite"></p><p class="muted small">Por privacidad, los ajustes se bloquean automáticamente tras unos minutos sin uso.</p>
         </div>
 
         <div id="settingsPanel" class="hidden">
@@ -183,10 +184,11 @@
     </noscript>
   </main>
 
-  <dialog id="emergencyDialog" class="modal" aria-labelledby="emergencyTitle">
+  <dialog id="emergencyDialog" class="modal" role="alertdialog" aria-labelledby="emergencyTitle" aria-describedby="emergencySummary">
     <h2 id="emergencyTitle">Emergencia activada</h2>
-    <p id="emergencySummary">Preparando aviso...</p>
+    <p id="emergencySummary" aria-live="assertive">Preparando aviso...</p>
     <div class="modal-actions">
+      <button id="modalCall112Btn" class="btn btn-danger modal-call-112" type="button">Llamar 112</button>
       <button id="callPrimaryBtn" class="btn btn-danger" type="button">Llamar familiar 1</button>
       <button id="callSecondaryBtn" class="btn btn-danger" type="button">Llamar familiar 2</button>
       <button id="sendSmsBtn" class="btn btn-primary" type="button">SMS familiar 1</button>

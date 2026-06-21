@@ -1,6 +1,6 @@
 # Privacidad
 
-Guardian Senior AI Secure v6 está diseñada como app local y offline-first.
+Guardian Senior AI Secure v6.1 está diseñada como app local y offline-first.
 
 ## Qué datos puede guardar
 
@@ -17,7 +17,7 @@ Los datos se guardan en `localStorage` del navegador del dispositivo.
 
 ## Qué se cifra
 
-Las notas médicas se cifran con AES-GCM usando una clave derivada del PIN familiar mediante PBKDF2 + sal.
+Las notas médicas se cifran con AES-GCM usando una clave derivada del PIN familiar mediante PBKDF2 + sal. En instalaciones nuevas el PIN debe tener 6–8 dígitos.
 
 ## Qué no se cifra por diseño
 
@@ -35,6 +35,10 @@ Los teléfonos familiares se guardan localmente sin cifrar para que la app pueda
 ## Ubicación
 
 La ubicación solo se solicita al activar una emergencia o una prueba de SMS. Si el usuario rechaza el permiso, el aviso se genera sin ubicación.
+
+## Bloqueo de ajustes
+
+Los ajustes sensibles se bloquean automáticamente tras unos minutos sin uso y también al cambiar de pestaña o app, para reducir exposición si el dispositivo queda abierto.
 
 ## Borrado de datos
 

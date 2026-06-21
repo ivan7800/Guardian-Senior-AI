@@ -63,7 +63,7 @@ body.high-contrast .hero p{color:#fff}
 .privacy-banner{padding:1rem 1.2rem;border-radius:1.2rem;border:2px solid #bfdbfe;background:#eff6ff;color:#1e3a8a;font-weight:650;line-height:1.45}
 .privacy-banner.warning{border-color:#fed7aa;background:#fff7ed;color:#9a3412}
 body.high-contrast .privacy-banner,body.high-contrast .pill{background:#111;color:#fff;border-color:#fff}
-.sos-panel{display:grid;grid-template-columns:1.45fr 1fr 1fr;gap:1rem}
+.sos-panel{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr) minmax(0,1fr);gap:1rem}
 .action{min-height:12.5rem;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.45rem;border-radius:2rem;border:0;padding:1.2rem;color:#fff;text-align:center;box-shadow:var(--shadow);cursor:pointer;touch-action:manipulation}
 .action-icon{font-size:3.8rem;line-height:1}
 .action-title{font-size:clamp(1.55rem,4vw,2.45rem);font-weight:1000;line-height:1}
@@ -71,7 +71,7 @@ body.high-contrast .privacy-banner,body.high-contrast .pill{background:#111;colo
 .action-sos{background:linear-gradient(180deg,var(--danger),var(--danger-dark))}
 .action-112{background:linear-gradient(180deg,var(--warning),#9a3412)}
 .action-safe{background:linear-gradient(180deg,#22c55e,#15803d)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid-2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem}
 .card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem}
 .muted{color:var(--muted)}
 .small{font-size:.9rem}.button-row{display:flex;flex-wrap:wrap;gap:.65rem;margin:.8rem 0}
@@ -79,6 +79,8 @@ body.high-contrast .privacy-banner,body.high-contrast .pill{background:#111;colo
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn:focus-visible,input:focus,textarea:focus,summary:focus-visible,.action:focus-visible{outline:none;box-shadow:var(--focus)}
 .btn-primary{background:linear-gradient(180deg,var(--primary),var(--primary-dark));color:#fff}
+body.high-contrast .btn-primary{color:#000;background:linear-gradient(180deg,#ffe600,#ffcf00)}
+body.high-contrast .btn-danger{color:#fff;background:linear-gradient(180deg,#ff2a2a,#b00000)}
 .btn-secondary,.btn-ghost{background:#eef2f7;color:var(--text);border:1px solid var(--border)}
 .btn-danger{background:linear-gradient(180deg,var(--danger),var(--danger-dark));color:#fff}
 .btn-wide{width:100%}
@@ -98,9 +100,10 @@ body.high-contrast .notice,body.high-contrast .link-box,body.high-contrast .mask
 .check-list .bad{border-color:#fecaca;background:#fef2f2;color:#991b1b}
 body.high-contrast .check-list li{background:#111;color:#fff;border-color:#fff}
 .danger-zone{border-color:#fecaca}
-.modal{width:min(720px,calc(100% - 28px));border:1px solid var(--border);border-radius:1.5rem;background:var(--panel);color:var(--text);box-shadow:var(--shadow);padding:1.2rem}
+.modal{width:min(720px,calc(100% - 28px));max-height:min(86vh,760px);overflow:auto;border:1px solid var(--border);border-radius:1.5rem;background:var(--panel);color:var(--text);box-shadow:var(--shadow);padding:1.2rem}
 .modal::backdrop{background:rgba(2,6,23,.72)}
-.modal-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;margin-top:1rem}
+.modal-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;margin-top:1rem}
+.modal-call-112{grid-column:1/-1;min-height:4rem;font-size:1.15rem}
 body.simple-mode .advanced-zone{display:none}
 body.simple-mode .sos-panel{grid-template-columns:1fr}
 body.simple-mode .action{min-height:11rem}
@@ -112,3 +115,7 @@ body.simple-mode .topbar{padding-bottom:.4rem}
   html{font-size:16px}.topbar,.layout{width:min(100% - 20px,1120px)}.panel{border-radius:1.25rem}.button-row .btn{width:100%}.modal-actions{grid-template-columns:1fr}.brand{align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+@media(max-width:360px){
+  .action-title{font-size:1.35rem}.action-subtitle{font-size:.92rem}.btn{font-size:.96rem;padding:.75rem .85rem}.modal{width:calc(100% - 18px);padding:1rem}
+}
